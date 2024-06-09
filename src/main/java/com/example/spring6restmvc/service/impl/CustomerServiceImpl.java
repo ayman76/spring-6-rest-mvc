@@ -1,5 +1,6 @@
 package com.example.spring6restmvc.service.impl;
 
+import com.example.spring6restmvc.exception.NotFoundException;
 import com.example.spring6restmvc.model.Customer;
 import com.example.spring6restmvc.service.CustomerService;
 import lombok.extern.slf4j.Slf4j;
@@ -50,9 +51,9 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Customer getCustomerById(UUID id) {
+    public Optional<Customer> getCustomerById(UUID id) {
         log.debug("Get Customer By Id function was called in service");
-        return customers.get(id);
+        return Optional.of(customers.get(id));
     }
 
     @Override
@@ -71,7 +72,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public void updateCustomerById(UUID customerId, Customer customer) {
-        Customer existingCustomer = getCustomerById(customerId);
+        Customer existingCustomer = getCustomerById(customerId).orElseThrow(NotFoundException::new);
         existingCustomer.setCustomerName(customer.getCustomerName());
         existingCustomer.setVersion(customer.getVersion());
         existingCustomer.setLastModifiedDate(LocalDateTime.now());
@@ -86,7 +87,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public void updateCustomerPatchById(UUID customerId, Customer customer) {
-        Customer existingCustomer = getCustomerById(customerId);
+        Customer existingCustomer = getCustomerById(customerId).orElseThrow(NotFoundException::new);
 
         if(StringUtils.hasText(customer.getCustomerName())){
             existingCustomer.setCustomerName(customer.getCustomerName());

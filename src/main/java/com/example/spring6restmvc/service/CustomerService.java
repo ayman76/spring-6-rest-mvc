@@ -3,12 +3,13 @@ package com.example.spring6restmvc.service;
 import com.example.spring6restmvc.model.Customer;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface CustomerService {
 
-    public List<Customer> listCustomers();
-    public Customer getCustomerById(UUID id);
+    List<Customer> listCustomers();
+    Optional<Customer> getCustomerById(UUID id);
 
     Customer createCustomer(Customer customer);
 

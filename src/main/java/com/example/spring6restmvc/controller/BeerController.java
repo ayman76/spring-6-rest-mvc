@@ -1,5 +1,6 @@
 package com.example.spring6restmvc.controller;
 
+import com.example.spring6restmvc.exception.NotFoundException;
 import com.example.spring6restmvc.model.Beer;
 import com.example.spring6restmvc.service.BeerService;
 import lombok.AllArgsConstructor;
@@ -67,6 +68,8 @@ public class BeerController {
     @GetMapping(BEER_PATH_ID)
     public Beer getBeerById(@PathVariable("beerId") UUID beerId) {
         log.debug("Get beer by id in controller was called");
-        return beerService.getBeerById(beerId);
+        return beerService.getBeerById(beerId).orElseThrow(NotFoundException::new);
     }
+
+
 }

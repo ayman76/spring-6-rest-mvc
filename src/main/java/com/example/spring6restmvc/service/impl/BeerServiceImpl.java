@@ -1,5 +1,6 @@
 package com.example.spring6restmvc.service.impl;
 
+import com.example.spring6restmvc.exception.NotFoundException;
 import com.example.spring6restmvc.model.Beer;
 import com.example.spring6restmvc.model.BeerStyle;
 import com.example.spring6restmvc.service.BeerService;
@@ -66,10 +67,10 @@ public class BeerServiceImpl implements BeerService {
     }
 
     @Override
-    public Beer getBeerById(UUID id) {
+    public Optional<Beer> getBeerById(UUID id) {
 
         log.debug("Get beer by id in service was called with id: " + id);
-        return beerMap.get(id);
+        return Optional.of(beerMap.get(id));
     }
 
     @Override
@@ -92,7 +93,7 @@ public class BeerServiceImpl implements BeerService {
 
     @Override
     public void updateById(UUID beerId, Beer beer) {
-        Beer existingBeer = getBeerById(beerId);
+        Beer existingBeer = getBeerById(beerId).orElseThrow(NotFoundException::new);
         existingBeer.setBeerName(beer.getBeerName());
         existingBeer.setBeerStyle(beer.getBeerStyle());
         existingBeer.setUpc(beer.getUpc());
@@ -111,7 +112,7 @@ public class BeerServiceImpl implements BeerService {
 
     @Override
     public void updateBeerPatchById(UUID beerId, Beer beer) {
-        Beer existingBeer = getBeerById(beerId);
+        Beer existingBeer = getBeerById(beerId).orElseThrow(NotFoundException::new);
 
         if (StringUtils.hasText(beer.getBeerName())){
             existingBeer.setBeerName(beer.getBeerName());

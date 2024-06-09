@@ -1,5 +1,6 @@
 package com.example.spring6restmvc.controller;
 
+import com.example.spring6restmvc.exception.NotFoundException;
 import com.example.spring6restmvc.model.Customer;
 import com.example.spring6restmvc.service.CustomerService;
 import lombok.AllArgsConstructor;
@@ -67,6 +68,7 @@ public class CustomerController {
     @GetMapping(CUSTOMER_PATH_ID)
     public Customer getCustomerById(@PathVariable("customerId")UUID customerId){
         log.debug("Get Customer By Id Functions called in controller");
-        return customerService.getCustomerById(customerId);
+        return customerService.getCustomerById(customerId).orElseThrow(NotFoundException::new);
     }
+
 }

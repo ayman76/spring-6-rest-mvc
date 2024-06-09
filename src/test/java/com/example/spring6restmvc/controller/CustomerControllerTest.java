@@ -1,5 +1,6 @@
 package com.example.spring6restmvc.controller;
 
+import com.example.spring6restmvc.exception.NotFoundException;
 import com.example.spring6restmvc.model.Customer;
 import com.example.spring6restmvc.service.CustomerService;
 import com.example.spring6restmvc.service.impl.CustomerServiceImpl;
@@ -14,10 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -125,7 +123,7 @@ class CustomerControllerTest {
     void testGetCustomerById() throws Exception {
         Customer testCustomer = customerServiceImpl.listCustomers().get(0);
 
-        given(customerService.getCustomerById(testCustomer.getId())).willReturn(testCustomer);
+        given(customerService.getCustomerById(testCustomer.getId())).willReturn(Optional.of(testCustomer));
 
         mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, testCustomer.getId())
                 .accept(MediaType.APPLICATION_JSON))
@@ -135,4 +133,11 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.customerName", is(testCustomer.getCustomerName())));
     }
 
+    @Test
+    void testGetCustomerByIdNotFound() throws Exception{
+
+        given(customerService.getCustomerById(any(UUID.class))).willReturn(Optional.empty());
+        mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, UUID.randomUUID()))
+                .andExpect(status().isNotFound());
+    }
 }
