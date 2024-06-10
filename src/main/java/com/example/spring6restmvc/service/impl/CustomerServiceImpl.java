@@ -1,7 +1,7 @@
 package com.example.spring6restmvc.service.impl;
 
 import com.example.spring6restmvc.exception.NotFoundException;
-import com.example.spring6restmvc.model.Customer;
+import com.example.spring6restmvc.model.CustomerDTO;
 import com.example.spring6restmvc.service.CustomerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,71 +13,43 @@ import java.util.*;
 @Slf4j
 @Service
 public class CustomerServiceImpl implements CustomerService {
-    private Map<UUID, Customer> customers;
+    private Map<UUID, CustomerDTO> customers;
     public CustomerServiceImpl() {
-        this.customers = new HashMap<>();
-        Customer customer1 = Customer.builder()
-                .id(UUID.randomUUID())
-                .version(1)
-                .customerName("Ahmed")
-                .createdDate(LocalDateTime.now())
-                .lastModifiedDate(LocalDateTime.now())
-                .build();
-
-        Customer customer2 = Customer.builder()
-                .id(UUID.randomUUID())
-                .version(1)
-                .customerName("Ayman")
-                .createdDate(LocalDateTime.now())
-                .lastModifiedDate(LocalDateTime.now())
-                .build();
-
-        Customer customer3 = Customer.builder()
-                .id(UUID.randomUUID())
-                .version(1)
-                .customerName("Mohamed")
-                .createdDate(LocalDateTime.now())
-                .lastModifiedDate(LocalDateTime.now())
-                .build();
-
-        customers.put(customer1.getId(), customer1);
-        customers.put(customer2.getId(), customer2);
-        customers.put(customer3.getId(), customer3);
     }
     @Override
-    public List<Customer> listCustomers() {
+    public List<CustomerDTO> listCustomers() {
         log.debug("List Customers function was called in service");
         return new ArrayList<>(customers.values());
     }
 
     @Override
-    public Optional<Customer> getCustomerById(UUID id) {
+    public Optional<CustomerDTO> getCustomerById(UUID id) {
         log.debug("Get Customer By Id function was called in service");
         return Optional.of(customers.get(id));
     }
 
     @Override
-    public Customer createCustomer(Customer customer) {
-        Customer savedCustomer = Customer.builder()
+    public CustomerDTO createCustomer(CustomerDTO customerDTO) {
+        CustomerDTO savedCustomerDTO = CustomerDTO.builder()
                 .id(UUID.randomUUID())
                 .createdDate(LocalDateTime.now())
                 .lastModifiedDate(LocalDateTime.now())
-                .customerName(customer.getCustomerName())
-                .version(customer.getVersion())
+                .customerName(customerDTO.getCustomerName())
+                .version(customerDTO.getVersion())
                 .build();
 
-        customers.put(savedCustomer.getId(), savedCustomer);
-        return savedCustomer;
+        customers.put(savedCustomerDTO.getId(), savedCustomerDTO);
+        return savedCustomerDTO;
     }
 
     @Override
-    public void updateCustomerById(UUID customerId, Customer customer) {
-        Customer existingCustomer = getCustomerById(customerId).orElseThrow(NotFoundException::new);
-        existingCustomer.setCustomerName(customer.getCustomerName());
-        existingCustomer.setVersion(customer.getVersion());
-        existingCustomer.setLastModifiedDate(LocalDateTime.now());
+    public void updateCustomerById(UUID customerId, CustomerDTO customerDTO) {
+        CustomerDTO existingCustomerDTO = getCustomerById(customerId).orElseThrow(NotFoundException::new);
+        existingCustomerDTO.setCustomerName(customerDTO.getCustomerName());
+        existingCustomerDTO.setVersion(customerDTO.getVersion());
+        existingCustomerDTO.setLastModifiedDate(LocalDateTime.now());
 
-        customers.put(existingCustomer.getId(), existingCustomer);
+        customers.put(existingCustomerDTO.getId(), existingCustomerDTO);
     }
 
     @Override
@@ -86,17 +58,17 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public void updateCustomerPatchById(UUID customerId, Customer customer) {
-        Customer existingCustomer = getCustomerById(customerId).orElseThrow(NotFoundException::new);
+    public void updateCustomerPatchById(UUID customerId, CustomerDTO customerDTO) {
+        CustomerDTO existingCustomerDTO = getCustomerById(customerId).orElseThrow(NotFoundException::new);
 
-        if(StringUtils.hasText(customer.getCustomerName())){
-            existingCustomer.setCustomerName(customer.getCustomerName());
+        if(StringUtils.hasText(customerDTO.getCustomerName())){
+            existingCustomerDTO.setCustomerName(customerDTO.getCustomerName());
         }
-        if(customer.getVersion() != null){
-            existingCustomer.setVersion(customer.getVersion());
+        if(customerDTO.getVersion() != null){
+            existingCustomerDTO.setVersion(customerDTO.getVersion());
         }
-        existingCustomer.setLastModifiedDate(LocalDateTime.now());
+        existingCustomerDTO.setLastModifiedDate(LocalDateTime.now());
 
-        customers.put(existingCustomer.getId(), existingCustomer);
+        customers.put(existingCustomerDTO.getId(), existingCustomerDTO);
     }
 }
