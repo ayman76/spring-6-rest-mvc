@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,16 +38,32 @@ public class CustomerServiceJpa implements CustomerService {
 
     @Override
     public CustomerDTO createCustomer(CustomerDTO customerDTO) {
-        return null;
+        return customerMapper.customerToCustomerDto(customerRepository.save(customerMapper.customerDtoToCustomer(customerDTO)));
     }
 
     @Override
-    public void updateCustomerById(UUID customerId, CustomerDTO customerDTO) {
+    public Optional<CustomerDTO> updateCustomerById(UUID customerId, CustomerDTO customerDTO) {
 
+        AtomicReference<Optional<CustomerDTO>> atomicReference = new AtomicReference<>();
+
+        customerRepository.findById(customerId).ifPresentOrElse(foundedCustomer -> {
+            foundedCustomer.setCustomerName(customerDTO.getCustomerName());
+            atomicReference.set(Optional.of(customerMapper.customerToCustomerDto(customerRepository.save(foundedCustomer))));
+        }, () -> {
+            atomicReference.set(Optional.empty());
+        });
+
+        return atomicReference.get();
     }
 
     @Override
-    public void deleteCustomerById(UUID customerId) {
+    public Boolean deleteCustomerById(UUID customerId) {
+        if(customerRepository.existsById(customerId)){
+            customerRepository.deleteById(customerId);
+            return true;
+        }
+
+        return false;
 
     }
 

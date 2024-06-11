@@ -3,10 +3,8 @@ package com.example.spring6restmvc.controller;
 import com.example.spring6restmvc.entitiy.Beer;
 import com.example.spring6restmvc.exception.NotFoundException;
 import com.example.spring6restmvc.mappers.BeerMapper;
-import com.example.spring6restmvc.mappers.BeerMapperImpl;
 import com.example.spring6restmvc.model.BeerDTO;
 import com.example.spring6restmvc.repositories.BeerRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -105,6 +103,23 @@ class BeerControllerIT {
     void testUpdateBeerNotFound() {
         assertThrows(NotFoundException.class, () -> {
             beerController.updateById(UUID.randomUUID(), BeerDTO.builder().build());
+        });
+    }
+
+    @Transactional
+    @Rollback
+    @Test
+    void testDeleteBeer() {
+        Beer beer = beerRepository.findAll().get(0);
+        ResponseEntity responseEntity = beerController.deleteBeerById(beer.getId());
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(beerRepository.findById(beer.getId())).isEmpty();
+    }
+
+    @Test
+    void testDeleteBeerNotFound() {
+        assertThrows(NotFoundException.class, () -> {
+            beerController.deleteBeerById(UUID.randomUUID());
         });
     }
 }

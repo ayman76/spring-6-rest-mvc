@@ -5,6 +5,7 @@ import com.example.spring6restmvc.model.CustomerDTO;
 import com.example.spring6restmvc.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,14 +34,19 @@ public class CustomerController {
 
     @DeleteMapping(CUSTOMER_PATH_ID)
     public ResponseEntity deleteCustoemrById(@PathVariable("customerId") UUID customerId) {
-        customerService.deleteCustomerById(customerId);
+        if(!customerService.deleteCustomerById(customerId)){
+            throw new NotFoundException();
+        }
 
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     @PutMapping(CUSTOMER_PATH_ID)
     public ResponseEntity updateCustomerById(@PathVariable("customerId") UUID customerId, @RequestBody CustomerDTO customerDTO) {
-        customerService.updateCustomerById(customerId, customerDTO);
+
+        if(customerService.updateCustomerById(customerId, customerDTO).isEmpty()){
+            throw new NotFoundException();
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", "/api/v1/customer/" + customerId);
