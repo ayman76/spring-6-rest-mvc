@@ -1,5 +1,6 @@
 package com.example.spring6restmvc.service.impl;
 
+import com.example.spring6restmvc.entitiy.Beer;
 import com.example.spring6restmvc.mappers.BeerMapper;
 import com.example.spring6restmvc.model.BeerDTO;
 import com.example.spring6restmvc.repositories.BeerRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,11 +39,25 @@ public class BeerServiceJPA implements BeerService {
 
     @Override
     public BeerDTO saveBeer(BeerDTO beerDTO) {
-        return null;
+        return beerMapper.beerToBeerDto(beerRepository.save(beerMapper.beerDtoToBeer(beerDTO)));
     }
 
     @Override
-    public void updateById(UUID beerId, BeerDTO beerDTO) {
+    public Optional<BeerDTO> updateById(UUID beerId, BeerDTO beerDTO) {
+        AtomicReference<Optional<BeerDTO>> atomicReference = new AtomicReference<>();
+        beerRepository.findById(beerId).ifPresentOrElse(foundedBeer -> {
+            foundedBeer.setBeerName(beerDTO.getBeerName());
+            foundedBeer.setBeerStyle(beerDTO.getBeerStyle());
+            foundedBeer.setPrice(beerDTO.getPrice());
+            foundedBeer.setUpc(beerDTO.getUpc());
+            foundedBeer.setQuantityOnHand(beerDTO.getQuantityOnHand());
+
+            atomicReference.set(Optional.of(beerMapper.beerToBeerDto(beerRepository.save(foundedBeer))));
+        }, () -> {
+            atomicReference.set(Optional.empty());
+        });
+
+        return atomicReference.get();
 
     }
 
