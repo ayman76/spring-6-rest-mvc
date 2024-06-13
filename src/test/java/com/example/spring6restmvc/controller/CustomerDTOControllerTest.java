@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.*;
 
@@ -78,6 +79,21 @@ class CustomerDTOControllerTest {
     }
 
     @Test
+    void testUpdateCustomerBlankCustomerName() throws Exception{
+        CustomerDTO testCustomerDTO = customerServiceImpl.listCustomers().get(0);
+        testCustomerDTO.setCustomerName("   ");
+
+        MvcResult mvcResult = mockMvc.perform(put(CustomerController.CUSTOMER_PATH_ID, testCustomerDTO.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(testCustomerDTO)))
+                .andExpect(jsonPath("$.length()", is(1)))
+                .andExpect(status().isBadRequest()).andReturn();
+
+        System.out.println(mvcResult.getResponse().getContentAsString());
+
+    }
+
+    @Test
     void testDeleteCustomer() throws Exception {
         CustomerDTO testCustomerDTO = customerServiceImpl.listCustomers().get(0);
 
@@ -105,6 +121,21 @@ class CustomerDTOControllerTest {
                 .content(objectMapper.writeValueAsBytes(testCustomerDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"));
+    }
+
+    @Test
+    void testCreateCustomerNullCustomerName() throws Exception{
+        CustomerDTO testCustomerDTO = CustomerDTO.builder().build();;
+
+        given(customerService.createCustomer(any(CustomerDTO.class))).willReturn(customerServiceImpl.listCustomers().get(1));
+
+        MvcResult mvcResult = mockMvc.perform(post(CustomerController.CUSTOMER_PATH)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(testCustomerDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.length()", is(2))).andReturn();
+
+        System.out.println(mvcResult.getResponse().getContentAsString());
     }
 
     @Test

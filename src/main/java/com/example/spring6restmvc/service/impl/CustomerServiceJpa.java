@@ -7,11 +7,11 @@ import com.example.spring6restmvc.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -58,7 +58,7 @@ public class CustomerServiceJpa implements CustomerService {
 
     @Override
     public Boolean deleteCustomerById(UUID customerId) {
-        if(customerRepository.existsById(customerId)){
+        if (customerRepository.existsById(customerId)) {
             customerRepository.deleteById(customerId);
             return true;
         }
@@ -68,7 +68,20 @@ public class CustomerServiceJpa implements CustomerService {
     }
 
     @Override
-    public void updateCustomerPatchById(UUID customerId, CustomerDTO customerDTO) {
+    public Optional<CustomerDTO> updateCustomerPatchById(UUID customerId, CustomerDTO customerDTO) {
 
+        AtomicReference<Optional<CustomerDTO>> atomicReference = new AtomicReference<>();
+
+        customerRepository.findById(customerId).ifPresentOrElse(
+                foundedCustomer -> {
+                    if (StringUtils.hasText(customerDTO.getCustomerName())) {
+                        foundedCustomer.setCustomerName(customerDTO.getCustomerName());
+                    }
+                    atomicReference.set(Optional.of(customerMapper.customerToCustomerDto(customerRepository.save(foundedCustomer))));
+                }, () -> {
+                    atomicReference.set(Optional.empty());
+                }
+        );
+        return atomicReference.get();
     }
 }

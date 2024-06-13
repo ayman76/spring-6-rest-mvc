@@ -1,6 +1,8 @@
 package com.example.spring6restmvc.entitiy;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -18,9 +20,13 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(length = 36, columnDefinition = "varchar", updatable = false, nullable = false)
     private UUID id;
-    private String customerName;
+
     @Version
     private Integer version;
+    @NonNull
+    @NotBlank
+    @Size(max = 50)
+    private String customerName;
     private LocalDateTime createdDate;
     private LocalDateTime lastModifiedDate;
 }

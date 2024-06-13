@@ -9,6 +9,7 @@ import org.aspectj.weaver.ast.Not;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,7 +43,7 @@ public class CustomerController {
     }
 
     @PutMapping(CUSTOMER_PATH_ID)
-    public ResponseEntity updateCustomerById(@PathVariable("customerId") UUID customerId, @RequestBody CustomerDTO customerDTO) {
+    public ResponseEntity updateCustomerById(@PathVariable("customerId") UUID customerId, @Validated @RequestBody CustomerDTO customerDTO) {
 
         if(customerService.updateCustomerById(customerId, customerDTO).isEmpty()){
             throw new NotFoundException();
@@ -55,7 +56,7 @@ public class CustomerController {
     }
 
     @PostMapping(CUSTOMER_PATH)
-    public ResponseEntity createCustomer(@RequestBody CustomerDTO customerDTO){
+    public ResponseEntity createCustomer(@Validated @RequestBody CustomerDTO customerDTO){
         CustomerDTO savedCustomerDTO = customerService.createCustomer(customerDTO);
 
         HttpHeaders headers = new HttpHeaders();

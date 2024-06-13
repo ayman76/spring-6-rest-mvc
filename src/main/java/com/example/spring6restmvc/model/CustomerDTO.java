@@ -1,5 +1,7 @@
 package com.example.spring6restmvc.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,6 +12,8 @@ import java.util.UUID;
 @Data
 public class CustomerDTO {
     private UUID id;
+    @NotBlank
+    @NotNull
     private String customerName;
     private Integer version;
     private LocalDateTime createdDate;

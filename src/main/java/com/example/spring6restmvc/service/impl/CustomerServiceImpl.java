@@ -90,7 +90,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public void updateCustomerPatchById(UUID customerId, CustomerDTO customerDTO) {
+    public Optional<CustomerDTO> updateCustomerPatchById(UUID customerId, CustomerDTO customerDTO) {
         CustomerDTO existingCustomerDTO = getCustomerById(customerId).orElseThrow(NotFoundException::new);
 
         if(StringUtils.hasText(customerDTO.getCustomerName())){
@@ -102,5 +102,6 @@ public class CustomerServiceImpl implements CustomerService {
         existingCustomerDTO.setLastModifiedDate(LocalDateTime.now());
 
         customers.put(existingCustomerDTO.getId(), existingCustomerDTO);
+        return null;
     }
 }
