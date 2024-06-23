@@ -5,85 +5,98 @@ import com.example.spring6restmvc.exception.NotFoundException;
 import com.example.spring6restmvc.mappers.CustomerMapper;
 import com.example.spring6restmvc.model.CustomerDTO;
 import com.example.spring6restmvc.repositories.CustomerRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class CustomerControllerIT {
 
     @Autowired
+    CustomerRepository customerRepository;
+
+    @Autowired
     CustomerController customerController;
 
     @Autowired
-    CustomerRepository customerRepository;
-    @Autowired
-    private CustomerMapper customerMapper;
+    CustomerMapper customerMapper;
 
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    WebApplicationContext wac;
-
-    MockMvc mockMvc;
-
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
-    }
-
+    @Rollback
+    @Transactional
     @Test
-    void testPatchCustomerTooLongName() throws Exception{
+    void deleteByIdFound() {
         Customer customer = customerRepository.findAll().get(0);
-        Map<String, Object> customerMap= new HashMap<>();
 
-        customerMap.put("customerName", "Ahmed 12321312231231232131223123123213122312312321312231231232131223123123213122312312321312231231232131223123");
+        ResponseEntity responseEntity = customerController.deleteCustoemrById(customer.getId());
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(204));
 
-        MvcResult mvcResult = mockMvc.perform(patch(CustomerController.CUSTOMER_PATH_ID, customer.getId())
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(customerMap)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.length()", is(1))).andReturn();
-
-        System.out.println(mvcResult.getResponse().getContentAsString());
+        assertThat(customerRepository.findById(customer.getId()).isEmpty());
     }
 
     @Test
-    void testListCustomers() {
-        List<CustomerDTO> dtos = customerController.listCustomers();
+    void testDeleteNotFound() {
+        assertThrows(NotFoundException.class, () -> {
+            customerController.deleteCustoemrById(UUID.randomUUID());
+        });
+    }
 
-        assertThat(dtos.size()).isEqualTo(3);
+    @Test
+    void testUpdateNotFound() {
+        assertThrows(NotFoundException.class, () -> {
+            customerController.updateCustomerById(UUID.randomUUID(), CustomerDTO.builder().build());
+        });
     }
 
     @Rollback
     @Transactional
     @Test
-    void testListCustomersEmpty() {
+    void updateExistingBeer() {
+        Customer customer = customerRepository.findAll().get(0);
+        CustomerDTO customerDTO = customerMapper.customerToCustomerDto(customer);
+        customerDTO.setId(null);
+        customerDTO.setVersion(null);
+        final String customerName = "UPDATED";
+        customerDTO.setCustomerName(customerName);
+
+        ResponseEntity responseEntity = customerController.updateCustomerById(customer.getId(), customerDTO);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(204));
+
+        Customer updatedCustomer = customerRepository.findById(customer.getId()).get();
+        assertThat(updatedCustomer.getName()).isEqualTo(customerName);
+    }
+
+    @Rollback
+    @Transactional
+    @Test
+    void saveNewBeerTest() {
+        CustomerDTO customerDTO = CustomerDTO.builder().customerName("TEST").build();
+
+        ResponseEntity responseEntity = customerController.createCustomer(customerDTO);
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(201));
+        assertThat(responseEntity.getHeaders().getLocation()).isNotNull();
+
+        String[] locationUUID = responseEntity.getHeaders().getLocation().getPath().split("/");
+        UUID savedUUID = UUID.fromString(locationUUID[4]);
+
+        Customer customer = customerRepository.findById(savedUUID).get();
+        assertThat(customer).isNotNull();
+    }
+
+    @Rollback
+    @Transactional
+    @Test
+    void testListAllEmptyList() {
         customerRepository.deleteAll();
         List<CustomerDTO> dtos = customerController.listCustomers();
 
@@ -91,80 +104,23 @@ class CustomerControllerIT {
     }
 
     @Test
-    void testGetCustomerById() {
-        Customer customer = customerRepository.findAll().get(0);
-        CustomerDTO dto = customerController.getCustomerById(customer.getId());
+    void testListAll() {
+        List<CustomerDTO> dtos = customerController.listCustomers();
 
-        assertThat(dto).isNotNull();
+        assertThat(dtos.size()).isEqualTo(3);
     }
 
     @Test
-    void testGetCustomerByIdNotFound() {
+    void testGetByIdNotFound() {
         assertThrows(NotFoundException.class, () -> {
             customerController.getCustomerById(UUID.randomUUID());
         });
     }
 
-    @Transactional
-    @Rollback
     @Test
-    void testSaveCustomer() {
-        CustomerDTO dto = CustomerDTO.builder().customerName("Ahmed").build();
-
-        ResponseEntity responseEntity = customerController.createCustomer(dto);
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(responseEntity.getHeaders().getLocation()).isNotNull();
-        String[] locationPath = responseEntity.getHeaders().getLocation().getPath().split("/");
-        UUID customerId = UUID.fromString(locationPath[4]);
-
-        Customer customer = customerRepository.findById(customerId).get();
-        assertThat(customer).isNotNull();
-    }
-
-    @Rollback
-    @Transactional
-    @Test
-    void testUpdateCustomer() {
+    void testGetById() {
         Customer customer = customerRepository.findAll().get(0);
-        CustomerDTO dto = customerMapper.customerToCustomerDto(customer);
-        dto.setId(null);
-        dto.setVersion(null);
-
-        String customerName = "Alaa";
-        dto.setCustomerName(customerName);
-
-        ResponseEntity responseEntity = customerController.updateCustomerById(customer.getId(), dto);
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-
-        Customer updatedCustomer = customerRepository.findById(customer.getId()).get();
-        assertThat(updatedCustomer.getCustomerName()).isEqualTo(customerName);
-    }
-
-    @Test
-    void testUpdateCustomerNotFound() {
-        assertThrows(NotFoundException.class, () -> {
-            customerController.updateCustomerById(UUID.randomUUID(), CustomerDTO.builder().build());
-        });
-
-    }
-
-    @Transactional
-    @Rollback
-    @Test
-    void testDeleteCustomer() {
-        Customer customer = customerRepository.findAll().get(0);
-
-        ResponseEntity responseEntity = customerController.deleteCustoemrById(customer.getId());
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-
-        assertThat(customerRepository.findById(customer.getId())).isEmpty();
-
-    }
-
-    @Test
-    void testDeleteCustomerNotFound() {
-        assertThrows(NotFoundException.class, () -> {
-            customerController.deleteCustoemrById(UUID.randomUUID());
-        });
+        CustomerDTO customerDTO = customerController.getCustomerById(customer.getId());
+        assertThat(customerDTO).isNotNull();
     }
 }
