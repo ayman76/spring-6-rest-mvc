@@ -1,7 +1,6 @@
-package com.example.spring6restmvc.service.impl;
+package com.example.spring6restmvc.services;
 
 import com.example.spring6restmvc.model.BeerCSVRecord;
-import com.example.spring6restmvc.service.BeerCsvService;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.ResourceUtils;
 
@@ -10,7 +9,6 @@ import java.io.FileNotFoundException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class BeerCsvServiceImplTest {
 
@@ -19,12 +17,12 @@ class BeerCsvServiceImplTest {
     @Test
     void convertCSV() throws FileNotFoundException {
 
-        File file = ResourceUtils.getFile("classpath:csvData/beers.csv");
+        File file = ResourceUtils.getFile("classpath:csvdata/beers.csv");
+
         List<BeerCSVRecord> recs = beerCsvService.convertCSV(file);
 
         System.out.println(recs.size());
 
         assertThat(recs.size()).isGreaterThan(0);
-
     }
 }

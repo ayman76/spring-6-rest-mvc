@@ -1,13 +1,14 @@
-package com.example.spring6restmvc.exception;
+package com.example.spring6restmvc.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Value not found")
-public class NotFoundException extends RuntimeException{
-
+/**
+ * Created by jt, Spring Framework Guru.
+ */
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Value Not Found")
+public class NotFoundException extends RuntimeException {
     public NotFoundException() {
-        super();
     }
 
     public NotFoundException(String message) {
@@ -22,7 +23,7 @@ public class NotFoundException extends RuntimeException{
         super(cause);
     }
 
-    protected NotFoundException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public NotFoundException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

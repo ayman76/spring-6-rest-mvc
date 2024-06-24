@@ -2,14 +2,13 @@ package com.example.spring6restmvc.bootstrap;
 
 import com.example.spring6restmvc.repositories.BeerRepository;
 import com.example.spring6restmvc.repositories.CustomerRepository;
-import com.example.spring6restmvc.service.BeerCsvService;
-import com.example.spring6restmvc.service.impl.BeerCsvServiceImpl;
+import com.example.spring6restmvc.services.BeerCsvService;
+import com.example.spring6restmvc.services.BeerCsvServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,7 +29,7 @@ class BootstrapDataTest {
 
     @BeforeEach
     void setUp() {
-        bootstrapData = new BootstrapData(customerRepository, beerRepository,csvService);
+        bootstrapData = new BootstrapData(beerRepository, customerRepository, csvService);
     }
 
     @Test
@@ -41,3 +40,8 @@ class BootstrapDataTest {
         assertThat(customerRepository.count()).isEqualTo(3);
     }
 }
+
+
+
+
+

@@ -1,13 +1,13 @@
 package com.example.spring6restmvc.bootstrap;
 
-import com.example.spring6restmvc.entitiy.Beer;
-import com.example.spring6restmvc.entitiy.Beer;
+
+import com.example.spring6restmvc.entities.Beer;
+import com.example.spring6restmvc.entities.Customer;
 import com.example.spring6restmvc.model.BeerCSVRecord;
 import com.example.spring6restmvc.model.BeerStyle;
-import com.example.spring6restmvc.entitiy.Customer;
 import com.example.spring6restmvc.repositories.BeerRepository;
 import com.example.spring6restmvc.repositories.CustomerRepository;
-import com.example.spring6restmvc.service.BeerCsvService;
+import com.example.spring6restmvc.services.BeerCsvService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.CommandLineRunner;
@@ -23,24 +23,28 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Created by jt, Spring Framework Guru.
+ */
 @Component
 @RequiredArgsConstructor
 public class BootstrapData implements CommandLineRunner {
-    private final CustomerRepository customerRepository;
     private final BeerRepository beerRepository;
+    private final CustomerRepository customerRepository;
     private final BeerCsvService beerCsvService;
 
     @Transactional
     @Override
     public void run(String... args) throws Exception {
-        loadBeers();
-        loadBeerCsv();
-        loadCustomers();
+        loadBeerData();
+        loadCsvData();
+        loadCustomerData();
     }
 
-    private void loadBeerCsv() throws FileNotFoundException {
-        if(beerRepository.count() < 10) {
-            File file = ResourceUtils.getFile("classpath:csvData/beers.csv");
+    private void loadCsvData() throws FileNotFoundException {
+        if (beerRepository.count() < 10){
+            File file = ResourceUtils.getFile("classpath:csvdata/beers.csv");
+
             List<BeerCSVRecord> recs = beerCsvService.convertCSV(file);
 
             recs.forEach(beerCSVRecord -> {
@@ -56,48 +60,20 @@ public class BootstrapData implements CommandLineRunner {
                     case "English Pale Ale" -> BeerStyle.PALE_ALE;
                     default -> BeerStyle.PILSNER;
                 };
+
                 beerRepository.save(Beer.builder()
-                        .beerName(StringUtils.abbreviate(beerCSVRecord.getBeer(), 50))
-                        .beerStyle(beerStyle)
-                        .price(BigDecimal.TEN)
-                        .upc(beerCSVRecord.getRow().toString())
-                        .quantityOnHand(beerCSVRecord.getCount())
+                                .beerName(StringUtils.abbreviate(beerCSVRecord.getBeer(), 50))
+                                .beerStyle(beerStyle)
+                                .price(BigDecimal.TEN)
+                                .upc(beerCSVRecord.getRow().toString())
+                                .quantityOnHand(beerCSVRecord.getCount())
                         .build());
             });
-
         }
     }
 
-    private void loadCustomers() {
-
-        if (customerRepository.count() == 0) {
-            Customer customer1 = Customer.builder()
-                    .name("Ahmed")
-                    .createdDate(LocalDateTime.now())
-                    .updateDate(LocalDateTime.now())
-                    .build();
-
-            Customer customer2 = Customer.builder()
-                    .name("Ayman")
-                    .createdDate(LocalDateTime.now())
-                    .updateDate(LocalDateTime.now())
-                    .build();
-
-            Customer customer3 = Customer.builder()
-                    .name("Mohamed")
-                    .createdDate(LocalDateTime.now())
-                    .updateDate(LocalDateTime.now())
-                    .build();
-
-            customerRepository.saveAll(Arrays.asList(customer1, customer2, customer3));
-        }
-
-
-    }
-
-    private void loadBeers() {
-
-        if (beerRepository.count() == 0) {
+    private void loadBeerData() {
+        if (beerRepository.count() == 0){
             Beer beer1 = Beer.builder()
                     .beerName("Galaxy Cat")
                     .beerStyle(BeerStyle.PALE_ALE)
@@ -128,7 +104,44 @@ public class BootstrapData implements CommandLineRunner {
                     .updateDate(LocalDateTime.now())
                     .build();
 
-            beerRepository.saveAll(Arrays.asList(beer1, beer2, beer3));
+            beerRepository.save(beer1);
+            beerRepository.save(beer2);
+            beerRepository.save(beer3);
         }
+
     }
+
+    private void loadCustomerData() {
+
+        if (customerRepository.count() == 0) {
+            Customer customer1 = Customer.builder()
+                    .id(UUID.randomUUID())
+                    .name("Customer 1")
+                    .version(1)
+                    .createdDate(LocalDateTime.now())
+                    .updateDate(LocalDateTime.now())
+                    .build();
+
+            Customer customer2 = Customer.builder()
+                    .id(UUID.randomUUID())
+                    .name("Customer 2")
+                    .version(1)
+                    .createdDate(LocalDateTime.now())
+                    .updateDate(LocalDateTime.now())
+                    .build();
+
+            Customer customer3 = Customer.builder()
+                    .id(UUID.randomUUID())
+                    .name("Customer 3")
+                    .version(1)
+                    .createdDate(LocalDateTime.now())
+                    .updateDate(LocalDateTime.now())
+                    .build();
+
+            customerRepository.saveAll(Arrays.asList(customer1, customer2, customer3));
+        }
+
+    }
+
+
 }

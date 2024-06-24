@@ -1,7 +1,6 @@
 package com.example.spring6restmvc.controller;
 
-import com.example.spring6restmvc.entitiy.Customer;
-import com.example.spring6restmvc.exception.NotFoundException;
+import com.example.spring6restmvc.entities.Customer;
 import com.example.spring6restmvc.mappers.CustomerMapper;
 import com.example.spring6restmvc.model.CustomerDTO;
 import com.example.spring6restmvc.repositories.CustomerRepository;
@@ -37,7 +36,7 @@ class CustomerControllerIT {
     void deleteByIdFound() {
         Customer customer = customerRepository.findAll().get(0);
 
-        ResponseEntity responseEntity = customerController.deleteCustoemrById(customer.getId());
+        ResponseEntity responseEntity = customerController.deleteCustomerById(customer.getId());
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(204));
 
         assertThat(customerRepository.findById(customer.getId()).isEmpty());
@@ -46,14 +45,14 @@ class CustomerControllerIT {
     @Test
     void testDeleteNotFound() {
         assertThrows(NotFoundException.class, () -> {
-            customerController.deleteCustoemrById(UUID.randomUUID());
+            customerController.deleteCustomerById(UUID.randomUUID());
         });
     }
 
     @Test
     void testUpdateNotFound() {
         assertThrows(NotFoundException.class, () -> {
-            customerController.updateCustomerById(UUID.randomUUID(), CustomerDTO.builder().build());
+            customerController.updateCustomerByID(UUID.randomUUID(), CustomerDTO.builder().build());
         });
     }
 
@@ -66,9 +65,9 @@ class CustomerControllerIT {
         customerDTO.setId(null);
         customerDTO.setVersion(null);
         final String customerName = "UPDATED";
-        customerDTO.setCustomerName(customerName);
+        customerDTO.setName(customerName);
 
-        ResponseEntity responseEntity = customerController.updateCustomerById(customer.getId(), customerDTO);
+        ResponseEntity responseEntity = customerController.updateCustomerByID(customer.getId(), customerDTO);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(204));
 
         Customer updatedCustomer = customerRepository.findById(customer.getId()).get();
@@ -79,9 +78,11 @@ class CustomerControllerIT {
     @Transactional
     @Test
     void saveNewBeerTest() {
-        CustomerDTO customerDTO = CustomerDTO.builder().customerName("TEST").build();
+       CustomerDTO customerDTO = CustomerDTO.builder()
+               .name("TEST")
+               .build();
 
-        ResponseEntity responseEntity = customerController.createCustomer(customerDTO);
+        ResponseEntity responseEntity = customerController.handlePost(customerDTO);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(201));
         assertThat(responseEntity.getHeaders().getLocation()).isNotNull();
@@ -98,14 +99,14 @@ class CustomerControllerIT {
     @Test
     void testListAllEmptyList() {
         customerRepository.deleteAll();
-        List<CustomerDTO> dtos = customerController.listCustomers();
+        List<CustomerDTO> dtos = customerController.listAllCustomers();
 
         assertThat(dtos.size()).isEqualTo(0);
     }
 
     @Test
     void testListAll() {
-        List<CustomerDTO> dtos = customerController.listCustomers();
+        List<CustomerDTO> dtos = customerController.listAllCustomers();
 
         assertThat(dtos.size()).isEqualTo(3);
     }
@@ -124,3 +125,13 @@ class CustomerControllerIT {
         assertThat(customerDTO).isNotNull();
     }
 }
+
+
+
+
+
+
+
+
+
+

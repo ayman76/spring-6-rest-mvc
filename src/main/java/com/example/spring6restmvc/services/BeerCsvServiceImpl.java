@@ -1,7 +1,6 @@
-package com.example.spring6restmvc.service.impl;
+package com.example.spring6restmvc.services;
 
 import com.example.spring6restmvc.model.BeerCSVRecord;
-import com.example.spring6restmvc.service.BeerCsvService;
 import com.opencsv.bean.CsvToBeanBuilder;
 import org.springframework.stereotype.Service;
 
@@ -10,12 +9,16 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.List;
 
+/**
+ * Created by jt, Spring Framework Guru.
+ */
 @Service
 public class BeerCsvServiceImpl implements BeerCsvService {
     @Override
     public List<BeerCSVRecord> convertCSV(File csvFile) {
+
         try {
-            List<BeerCSVRecord> beerCSVRecords = new CsvToBeanBuilder<BeerCSVRecord>(new FileReader (csvFile))
+            List<BeerCSVRecord> beerCSVRecords = new CsvToBeanBuilder<BeerCSVRecord>(new FileReader(csvFile))
                     .withType(BeerCSVRecord.class)
                     .build().parse();
             return beerCSVRecords;

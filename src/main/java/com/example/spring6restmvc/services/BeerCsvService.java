@@ -1,11 +1,12 @@
-package com.example.spring6restmvc.service;
+package com.example.spring6restmvc.services;
 
 import com.example.spring6restmvc.model.BeerCSVRecord;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
+/**
+ * Created by jt, Spring Framework Guru.
+ */
 public interface BeerCsvService {
     List<BeerCSVRecord> convertCSV(File csvFile);
 }
