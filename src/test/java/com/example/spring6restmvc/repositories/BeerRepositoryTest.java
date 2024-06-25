@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,21 +27,21 @@ class BeerRepositoryTest {
 
     @Test
     void testGetBeerListByBeerNameAndBeerStyle() {
-        List<Beer> list = beerRepository.findAllByBeerNameIsLikeIgnoreCaseAndBeerStyle("%ALE%", BeerStyle.IPA);
-        assertThat(list.size()).isEqualTo(57);
+        Page<Beer> list = beerRepository.findAllByBeerNameIsLikeIgnoreCaseAndBeerStyle("%ALE%", BeerStyle.IPA, null);
+        assertThat(list.getSize()).isEqualTo(57);
     }
 
     @Test
     void testGetBeerListByBeerStyle() {
-        List<Beer> list = beerRepository.findAllByBeerStyle(BeerStyle.IPA);
-        assertThat(list.size()).isEqualTo(548);
+        Page<Beer> list = beerRepository.findAllByBeerStyle(BeerStyle.IPA, null);
+        assertThat(list.getSize()).isEqualTo(548);
     }
 
     @Test
     void testGetBeerListByName() {
-        List<Beer> list = beerRepository.findAllByBeerNameIsLikeIgnoreCase("%IPA%");
+        Page<Beer> list = beerRepository.findAllByBeerNameIsLikeIgnoreCase("%IPA%", null);
 
-        assertThat(list.size()).isEqualTo(336);
+        assertThat(list.getSize()).isEqualTo(336);
     }
 
     @Test
